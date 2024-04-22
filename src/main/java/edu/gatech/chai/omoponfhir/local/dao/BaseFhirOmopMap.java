@@ -11,7 +11,10 @@ public class BaseFhirOmopMap {
 	final static Logger logger = LoggerFactory.getLogger(BaseFhirOmopMap.class);
 
 	public Connection connect() {
-		String url = "jdbc:sqlite::resource:omoponfhir.db";
+		String url = System.getenv("SMARTONFHIR_DB_URI");
+		if (url == null || url.isEmpty()) {
+			url = "jdbc:sqlite::resource:omoponfhir.db";
+		}
 		Connection conn = null;
 		try {
 			Class.forName("org.sqlite.JDBC");

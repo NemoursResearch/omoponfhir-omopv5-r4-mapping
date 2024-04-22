@@ -158,10 +158,11 @@ public class OmopCodeSystem extends BaseOmopResource<CodeSystem, Vocabulary, Voc
 
         List<Concept> conceptIds = new ArrayList<Concept>();
         try {
-            conceptIds.addAll(conceptService.searchWithParams(0, 100, params, null));
+            int size = conceptService.getSize(params).intValue();
+            conceptIds.addAll(conceptService.searchWithParams(0, size, params, null));
         } catch (Exception e) {
             e.printStackTrace();
-        } 
+        }
         
         for (Concept match: conceptIds) {
             ConceptDefinitionComponent code = new ConceptDefinitionComponent();
@@ -178,7 +179,7 @@ public class OmopCodeSystem extends BaseOmopResource<CodeSystem, Vocabulary, Voc
     }
 
     
-    
+
     
     /** 
      * From FHIR to OMOP - used in the create operation 
@@ -282,7 +283,7 @@ public class OmopCodeSystem extends BaseOmopResource<CodeSystem, Vocabulary, Voc
             case CodeSystem.SP_CODE:
                 String code = (String) value;
                 paramWrapper.setParameterType("String");
-                paramWrapper.setParameters(Arrays.asList("conceptName"));
+                paramWrapper.setParameters(Arrays.asList("vocabularyConcept.conceptName"));
                 paramWrapper.setOperators(Arrays.asList("like"));
                 paramWrapper.setValues(Arrays.asList(code));
                 paramWrapper.setRelationship("or");
