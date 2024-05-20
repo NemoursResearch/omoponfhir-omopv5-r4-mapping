@@ -55,6 +55,7 @@ import ca.uhn.fhir.rest.api.SortSpec;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
+import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.param.TokenParamModifier;
 import edu.gatech.chai.omoponfhir.omopv5.r4.utilities.CodeableConceptUtil;
@@ -1990,6 +1991,15 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 		case Observation.SP_DATE:
 			DateRangeParam dateRangeParam = ((DateRangeParam) value);
 			DateUtil.constructParameterWrapper(dateRangeParam, "observationDate", paramWrapper, mapList);
+			break;
+		case Observation.SP_VALUE_QUANTITY:
+			String quantityString = ((StringParam) value).getValue();
+			paramWrapper.setParameterType("Long");
+			paramWrapper.setParameters(Arrays.asList("valueAsNumber"));
+			paramWrapper.setOperators(Arrays.asList("="));
+			paramWrapper.setValues(Arrays.asList(quantityString));
+			paramWrapper.setRelationship("or");
+			mapList.add(paramWrapper);
 			break;
 		case Observation.SP_CODE:
 			String system = ((TokenParam) value).getSystem();

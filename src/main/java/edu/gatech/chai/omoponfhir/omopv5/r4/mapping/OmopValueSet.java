@@ -122,7 +122,7 @@ public class OmopValueSet extends BaseOmopResource<ValueSet, ConceptRelationship
         //     System.out.println("This is the concept code " + match.getConceptCode());
         //     System.out.println("This is the concept name " + match.getConceptName());
         // }
-        
+
 
         
         
@@ -190,8 +190,15 @@ public class OmopValueSet extends BaseOmopResource<ValueSet, ConceptRelationship
             mapList.add(paramWrapper);
             break;
         case ValueSet.SP_CODE: //just examples, add more later 
+            paramWrapper.setParameterType("String");
+            paramWrapper.setParameters(Arrays.asList("concept1.conceptCode"));
+            paramWrapper.setOperators(Arrays.asList("="));
+            paramWrapper.setValues(Arrays.asList(value.toString()));
+            paramWrapper.setRelationship("or");
+            mapList.add(paramWrapper);
+            break;
         case ValueSet.SP_DESCRIPTION:
-        default: 
+        default:
             mapList = null;
         }
         return mapList; 

@@ -301,7 +301,7 @@ public class OmopCodeSystem extends BaseOmopResource<CodeSystem, Vocabulary, Voc
             case CodeSystem.SP_NAME:
                 String name = (String) value;
                 paramWrapper.setParameterType("String");
-                paramWrapper.setParameters(Arrays.asList("vocabularyId"));
+                paramWrapper.setParameters(Arrays.asList("id"));
                 paramWrapper.setOperators(Arrays.asList("like"));
                 paramWrapper.setValues(Arrays.asList(name));
                 paramWrapper.setRelationship("or");
