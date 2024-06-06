@@ -63,6 +63,11 @@
 			<artifactId>hapi-fhir-caching-caffeine</artifactId>
 			<version>${hapi_stable_version}</version>
 		</dependency>
+		<dependency>
+			<groupId>ca.uhn.hapi.fhir</groupId>
+			<artifactId>hapi-fhir-jpaserver-base</artifactId>
+			<version>${hapi_stable_version}</version>
+		</dependency>
 
 		<!-- Used for CORS support -->
 		<dependency>

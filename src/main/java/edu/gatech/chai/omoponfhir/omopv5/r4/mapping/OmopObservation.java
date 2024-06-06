@@ -51,10 +51,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.WebApplicationContext;
 
+import ca.uhn.fhir.jpa.dao.predicate.SearchFilterParser;
+import ca.uhn.fhir.jpa.util.QueryParameterUtils;
 import ca.uhn.fhir.rest.api.SortSpec;
+import ca.uhn.fhir.rest.param.CompositeParam;
 import ca.uhn.fhir.rest.param.DateParam;
 import ca.uhn.fhir.rest.param.DateRangeParam;
 import ca.uhn.fhir.rest.param.ParamPrefixEnum;
+import ca.uhn.fhir.rest.param.QuantityParam;
 import ca.uhn.fhir.rest.param.StringParam;
 import ca.uhn.fhir.rest.param.TokenParam;
 import ca.uhn.fhir.rest.param.TokenParamModifier;
@@ -1992,20 +1996,75 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 			DateRangeParam dateRangeParam = ((DateRangeParam) value);
 			DateUtil.constructParameterWrapper(dateRangeParam, "observationDate", paramWrapper, mapList);
 			break;
+		case Observation.SP_CODE_VALUE_QUANTITY:
+			CompositeParam<TokenParam, QuantityParam> param = ((CompositeParam) value);
+			List<ParameterWrapper> pw1 = mapParameter(Observation.SP_CODE, param.getLeftValue(), false);
+			List<ParameterWrapper> pw2 = mapParameter(Observation.SP_VALUE_QUANTITY, param.getRightValue(), false);
+			mapList.addAll(pw1);
+			mapList.addAll(pw2);
+			break;
 		case Observation.SP_VALUE_QUANTITY:
-			String quantityString = ((StringParam) value).getValue();
-			paramWrapper.setParameterType("Long");
-			paramWrapper.setParameters(Arrays.asList("valueAsNumber"));
-			paramWrapper.setOperators(Arrays.asList("="));
-			paramWrapper.setValues(Arrays.asList(quantityString));
-			paramWrapper.setRelationship("or");
-			mapList.add(paramWrapper);
+			if (value instanceof CompositeParam<?,?>) {
+				value = ((CompositeParam<?, ?>) value).getLeftValue();
+			}
+			if (value instanceof QuantityParam) {
+				QuantityParam qp = (QuantityParam)value;
+
+				ParameterWrapper pw = new ParameterWrapper();
+				pw.setParameterType("Long");
+				pw.setParameters(Arrays.asList("valueAsNumber"));
+
+				switch (QueryParameterUtils.toOperation(qp.getPrefix())) {
+					case eq:
+						if (qp.getPrefix() == null) {
+							pw.setOperators(Arrays.asList(new String[] { null }));
+						} else {
+							pw.setOperators(Arrays.asList("="));
+						}
+						break;
+					case ge:
+						pw.setOperators(Arrays.asList(">="));
+						break;
+					case le:
+						pw.setOperators(Arrays.asList("<="));
+						break;
+					case gt:
+						pw.setOperators(Arrays.asList(">"));
+						break;
+					case lt:
+						pw.setOperators(Arrays.asList("<"));
+						break;
+					default:
+						throw new RuntimeException("Not implemented: " + qp.getPrefix());
+				}
+				pw.setValues(Arrays.asList(qp.getValueAsString()));
+				pw.setRelationship(or ? "or" : "and");
+				mapList.add(pw);
+
+				if (qp.getUnits() != null) {
+					pw = new ParameterWrapper();
+					pw.setParameterType("String");
+					pw.setParameters(Arrays.asList("unitConcept.conceptCode"));
+					pw.setOperators(Arrays.asList("="));
+					pw.setValues(Arrays.asList(qp.getUnits()));
+					pw.setRelationship(or ? "or" : "and");
+					mapList.add(pw);
+				}
+			} else {
+				String quantityString = ((StringParam) value).getValue();
+				paramWrapper.setParameterType("Long");
+				paramWrapper.setParameters(Arrays.asList("valueAsNumber"));
+				paramWrapper.setOperators(Arrays.asList("="));
+				paramWrapper.setValues(Arrays.asList(quantityString));
+				paramWrapper.setRelationship("or");
+				mapList.add(paramWrapper);
+			}
 			break;
 		case Observation.SP_CODE:
 			String system = ((TokenParam) value).getSystem();
 			String code = ((TokenParam) value).getValue();
 			TokenParamModifier modifier = ((TokenParam) value).getModifier();
-			
+
 			String modifierString = null;
 			if (modifier != null) {
 				modifierString = modifier.getValue();
