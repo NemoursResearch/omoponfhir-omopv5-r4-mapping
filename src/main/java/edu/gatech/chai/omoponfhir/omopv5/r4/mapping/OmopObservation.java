@@ -2060,6 +2060,20 @@ public class OmopObservation extends BaseOmopResource<Observation, FObservationV
 				mapList.add(paramWrapper);
 			}
 			break;
+		case Observation.SP_CODE_VALUE_CONCEPT:
+			CompositeParam<TokenParam, TokenParam> cvc = ((CompositeParam) value);
+			mapList.addAll(mapParameter(Observation.SP_CODE, cvc.getLeftValue(), false));
+			mapList.addAll(mapParameter(Observation.SP_VALUE_CONCEPT, cvc.getRightValue(), false));
+			break;
+		case Observation.SP_VALUE_CONCEPT:
+			List<ParameterWrapper> mapped = mapParameter(Observation.SP_CODE, value, or);
+			for (int i = 0; i < mapped.size(); i++) {
+				for (int j = 0; j < mapped.get(i).getParameters().size(); j++) {
+					mapped.get(i).getParameters().set(j, mapped.get(i).getParameters().get(j).replace("observationConcept", "valueAsConcept"));
+				}
+			}
+			mapList = mapped;
+			break;
 		case Observation.SP_CODE:
 			String system = ((TokenParam) value).getSystem();
 			String code = ((TokenParam) value).getValue();
