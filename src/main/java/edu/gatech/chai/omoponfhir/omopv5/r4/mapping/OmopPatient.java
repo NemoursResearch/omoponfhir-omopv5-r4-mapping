@@ -862,6 +862,26 @@ public class OmopPatient extends BaseOmopResource<USCorePatient, FPerson, FPerso
 			paramWrapper.setRelationship("or");
 			mapList.add(paramWrapper);
 			break;
+		case Patient.SP_GENDER:
+			TokenParam token = ((TokenParam) value);
+			String system = token.getSystem();
+			String code = token.getValue();
+			String omopVocabulary;
+			if (system != null && !system.isEmpty()) {
+				try {
+					omopVocabulary = fhirOmopVocabularyMap.getOmopVocabularyFromFhirSystemName(system);
+				} catch (FHIRException e) {
+					e.printStackTrace();
+					break;
+				}
+			} else {
+				omopVocabulary = "None";
+			}
+			paramWrapper.setParameters(Arrays.asList("genderConcept.vocabularyId", "genderConcept.conceptCode"));
+			paramWrapper.setOperators(Arrays.asList("like", "like"));
+			paramWrapper.setValues(Arrays.asList(omopVocabulary, code));
+			mapList.add(paramWrapper);
+			break;
 		case "Organization:" + Organization.SP_NAME:
 			String orgName = (String) value;
 			paramWrapper.setParameterType("String");
